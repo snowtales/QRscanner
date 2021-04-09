@@ -36,7 +36,6 @@ import okhttp3.Response;
 public class MainActivity extends AppCompatActivity {
     private static final int CODE_CAM = 101;
     private static final String TAG = "makeMeReal";
-    private static final String TICK_URL = "https://43.arcomp.ru/api/check/ticket/584/1/";
     private CodeScanner codeScanner;
     private ActivityMainBinding binding;
     private String tail;
@@ -76,8 +75,9 @@ public class MainActivity extends AppCompatActivity {
                 -> runOnUiThread(()
                 -> {
             tail = result.getText();
-            parseExampleOfJsonObject(TICK_URL /*https://43.arcomp.ru/api/check/ticket/584/1/ */ + result.getText());
-            binding.info.setText(TICK_URL + result.getText());
+            parseExampleOfJsonObject(BuildConfig.TEST_TICKET_URL /*https://task.arcomp.ru/api/check/ticket/584/1/ */ + result.getText());
+            String concat = BuildConfig.TEST_TICKET_URL + result.getText();
+            binding.info.setText(concat);
         }));
 
         binding.qrScanner.setOnClickListener(view -> codeScanner.startPreview());
@@ -116,7 +116,7 @@ public class MainActivity extends AppCompatActivity {
         OkHttpClient client = new OkHttpClient();
         Request request = new Request.Builder()
                 .url(s)
-                .header("Authorization", "Bearer " + "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIzIiwianRpIjoiZDBlMWExZjEzMGM4OWUyMGFmODZjNzVlYTYwMzEwYWQ3NmNjNThiOGJlZTkyYmQ0MmFmYzg4MTU5MTVkNDcyOWUxNWNmYzUzMzMxYTY1NDciLCJpYXQiOjE2MTQ4OTkyODgsIm5iZiI6MTYxNDg5OTI4OCwiZXhwIjoxNjQ2NDM1Mjg4LCJzdWIiOiIxIiwic2NvcGVzIjpbXX0.jsNJEEkHzaordNWRl4sSImycaL3XeVJZhK4oPxL3Yn8iD8HbMDk6SY7IBI-ie-WqP-cTY9zetMsW2fSXrINfoG1EOXcgOZrp4Wlzr26LwIGzNljrki4AlW5eapfx5ZxvYI6RBc-BsTpZXvtrvkIrvbpwAlYo1s20MjEfJu6lREk7EZsnL9HxKw4obNGhoqdlnWMG1be6iMZAOeg_Ew2vxn1XcbulCNVeVkDGALWfcMReDAMt07Z7cfdN_zpmGFVOzgJlQerMdeYTS0DShQk2fb0HvimVnlA4lytOPTsIbmCeVI37qFtsFN-zMI9W8iedPJZ0ETT7WlYZYXiIDLsljsDsOgdz8s2sUPdzCo6ELKr8SxRdrZGT2DzLml9_peRiIS6siTXkmKL2Mg2zH2-pQOlM6bpWGkQ7-aE19uj0YtudtZz1keOeCtPcbmJgUKmIWF0G3dbjIHuzsxgPQqPTabJdwOaISFBsHgskRVgdNubFTZ7ztNcXc0AySZ7X9meeF6wYwU_gFR5b3xw2Vf2v0_LA4fZ_fetZGaYqhvDRTHtzBDf92FJ_NAdqqJLWdlApZ6vL4S-TCcHtppvMaqK32vpUBXaQbO1_jlRziM11S-P5uth1nlKKPqBIMfsZItQn390pneiP2gdNNjyHPjQeUfqbHK0QAJaVwTdJ5XVySus")
+                .header("Authorization", "Bearer " + BuildConfig.TEST_TOKEN)
                 .build();
         try (Response response = client.newCall(request).execute()) {
             return response.body().string();
