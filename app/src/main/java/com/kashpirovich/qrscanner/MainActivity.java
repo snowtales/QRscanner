@@ -106,9 +106,7 @@ public class MainActivity extends AppCompatActivity {
                 .observeOn(Schedulers.io())
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .map(this::downloadJson)
-                .subscribe(jsonString -> {
-                            Log.w(TAG, "parseExampleOfJsonObject: " + jsonString);
-                        },
+                .subscribe(this:: parseJsonObject,
                         throwable -> Log.e(TAG, "onCreate: ", throwable));
     }
 
@@ -133,18 +131,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public class Todo {
-        public int userId;
-        public int id;
-        public String title;
-        public boolean completed;
+        public boolean success;
+        public String message;
 
         @Override
         public String toString() {
             return "Todo{" +
-                    "userId=" + userId +
-                    ", id=" + id +
-                    ", title='" + title + '\'' +
-                    ", completed=" + completed +
+                    "success=" + success +
+                    ", message=" + message + '\'' +
                     '}';
         }
     }
