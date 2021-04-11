@@ -9,8 +9,10 @@ import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.VibrationEffect;
 import android.util.Log;
 import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.budiyev.android.codescanner.AutoFocusMode;
@@ -18,6 +20,8 @@ import com.budiyev.android.codescanner.CodeScanner;
 import com.budiyev.android.codescanner.CodeScannerView;
 import com.budiyev.android.codescanner.DecodeCallback;
 import com.budiyev.android.codescanner.ScanMode;
+import com.google.android.material.snackbar.BaseTransientBottomBar;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.gson.Gson;
 import com.google.zxing.Result;
 import com.kashpirovich.qrscanner.databinding.ActivityMainBinding;
@@ -32,6 +36,8 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
+import android.os.Vibrator;
+
 
 public class MainActivity extends AppCompatActivity {
     private static final int CODE_CAM = 101;
@@ -39,6 +45,8 @@ public class MainActivity extends AppCompatActivity {
     private CodeScanner codeScanner;
     private ActivityMainBinding binding;
     private String tail;
+    private Vibrator vibrator;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(v);
         codeScan();
         setupPermission();
+        vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
     }
 
     @Override
@@ -72,13 +81,17 @@ public class MainActivity extends AppCompatActivity {
         codeScanner.setFlashEnabled(false);
 
         codeScanner.setDecodeCallback(result
-                -> runOnUiThread(()
                 -> {
-            tail = result.getText();
-            parseExampleOfJsonObject(BuildConfig.TEST_TICKET_URL /*https://task.arcomp.ru/api/check/ticket/584/1/ */ + result.getText());
-            String concat = BuildConfig.TEST_TICKET_URL + result.getText();
-            binding.info.setText(concat);
-        }));
+            runOnUiThread(()
+                    -> {
+                tail = result.getText();
+                parseExampleOfJsonObject(BuildConfig.TEST_TICKET_URL /*https://task.arcomp.ru/api/check/ticket/584/1/ */ + result.getText());
+                String concat = BuildConfig.TEST_TICKET_URL + result.getText();
+                binding.info.setText(concat);
+                vibrator.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
+            });
+        });
+
 
         binding.qrScanner.setOnClickListener(view -> codeScanner.startPreview());
 
@@ -106,7 +119,7 @@ public class MainActivity extends AppCompatActivity {
                 .observeOn(Schedulers.io())
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .map(this::downloadJson)
-                .subscribe(this:: parseJsonObject,
+                .subscribe(this::parseJsonObject,
                         throwable -> Log.e(TAG, "onCreate: ", throwable));
     }
 
@@ -119,6 +132,7 @@ public class MainActivity extends AppCompatActivity {
         try (Response response = client.newCall(request).execute()) {
             return response.body().string();
         } catch (IOException exception) {
+            runOnUiThread(() -> Snackbar.make(this, binding.getRoot(), "Проверьте интернет", BaseTransientBottomBar.LENGTH_LONG).show());
             Log.e("MainActivity", "downloadJson: ", exception);
             return "";
         }
@@ -126,9 +140,16 @@ public class MainActivity extends AppCompatActivity {
 
     private void parseJsonObject(String json) {
         Gson gson = new Gson();
-        Todo todo = gson.fromJson(json, Todo.class);
-        Log.e(TAG, "parseJsonObject: " + todo);
-    }
+            try {
+                Todo todo = gson.fromJson(json, Todo.class);
+                Log.e(TAG, "parseJsonObject: " + todo);
+            } catch(Exception e)
+        {
+            Log.e("THAT IS MISTAKE", e.toString());
+            runOnUiThread(()->
+                Toast.makeText(this, "Что-то не то", Toast.LENGTH_LONG).show());
+        }
+ }
 
     public class Todo {
         public boolean success;
