@@ -65,12 +65,7 @@ public class ThirdActivity extends AppCompatActivity {
 
 
         codeScan();
-        binding.refresh.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                recreate();
-            }
-        });
+        binding.refresh.setOnClickListener(v1 -> recreate());
         setupPermission();
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
     }
