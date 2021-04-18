@@ -1,33 +1,64 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-xmlns:app="http://schemas.android.com/apk/res-auto"
-xmlns:tools="http://schemas.android.com/tools"
-android:layout_width="match_parent"
-android:layout_height="match_parent"
-android:orientation="vertical"
-tools:context=".MainActivity">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
 
-<com.budiyev.android.codescanner.CodeScannerView
-    android:id="@+id/qr_scanner"
-    android:layout_width="wrap_content"
-    android:layout_height="0dp"
-    android:layout_weight="1"
-    app:autoFocusButtonColor="@android:color/white"
-    app:autoFocusButtonVisible="true"
-    app:flashButtonColor="@color/white"
-    app:flashButtonVisible="true"
-    app:maskColor="#B0131010" />
+    <com.budiyev.android.codescanner.CodeScannerView
+        android:id="@+id/qr_scanner"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        app:autoFocusButtonColor="@android:color/white"
+        app:autoFocusButtonVisible="true"
+        app:flashButtonColor="@color/white"
+        app:flashButtonVisible="true"
+        app:maskColor="#B0131010" />
 
-<TextView
-    android:id="@+id/info"
-    android:layout_width="wrap_content"
-    android:layout_height="0dp"
-    android:layout_gravity="center_horizontal"
-    android:layout_weight="1"
-    android:hint="Отсканируйте билет"
-    android:paddingTop="50dp"
-    android:textAppearance="?android:attr/textAppearanceLarge"
-    android:textColor="@color/black" />
+    <RelativeLayout
+        android:id="@+id/info_block"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="@color/white">
+
+        <ImageButton
+            android:id="@+id/refresh"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_alignParentRight="true"
+            android:background="@color/white"
+            android:src="@drawable/ic_baseline_refresh_24" />
+
+        <TextView
+            android:id="@+id/info"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:hint="Отсканируйте билет"
+            android:paddingLeft="18dp"
+            android:paddingTop="50dp"
+            android:paddingRight="18dp"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textColor="@color/black" />
+
+        <TextView
+            android:id="@+id/internetearn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/info"
+            android:layout_gravity="center_horizontal"
+            android:hint="Отсканируйте билет"
+            android:paddingLeft="18dp"
+            android:paddingTop="50dp"
+            android:paddingRight="18dp"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textColor="@color/black"
+            android:visibility="gone" />
+    </RelativeLayout>
 
 </LinearLayout>

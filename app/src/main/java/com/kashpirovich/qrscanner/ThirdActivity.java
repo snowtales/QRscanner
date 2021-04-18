@@ -3,11 +3,13 @@ package com.kashpirovich.qrscanner;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -21,8 +23,10 @@ import com.budiyev.android.codescanner.ScanMode;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.gson.Gson;
-import com.kashpirovich.qrscanner.databinding.ActivityMainBinding;
-import com.kashpirovich.qrscanner.databinding.SecondWindowBinding;
+import com.kashpirovich.qrscanner.databinding.ThirdWindowBinding;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.IOException;
 
@@ -34,31 +38,39 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-public class SecondActivity extends AppCompatActivity {
+public class ThirdActivity extends AppCompatActivity {
     private static final int CODE_CAM = 101;
     private static final String TAG = "makeMeReal";
     private CodeScanner codeScanner;
-    private SecondWindowBinding binding;
-    private String tail;
+    EventClass getter;
+    private ThirdWindowBinding binding;
+    private String tail, eventId, gatesId;
     private Vibrator vibrator;
-
-    CinemasClass getter;
+    private String total;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = SecondWindowBinding.inflate(getLayoutInflater());
+        binding = ThirdWindowBinding.inflate(getLayoutInflater());
+        Bundle bungle = getIntent().getExtras();
         View v = binding.getRoot();
         setContentView(v);
-        Bundle bungle = getIntent().getExtras();
-
         if (bungle != null) {
-            getter = getIntent().getParcelableExtra("id");
+            getter = getIntent().getParcelableExtra("event");
         }
-        this.setTitle(getter.getName());
-        binding.info.setText(getter.getId());
+        eventId = getter.getId() + "/";
+        gatesId = getter.getGatesId() + "/";
+        tail = eventId + gatesId;
+
+
         codeScan();
+        binding.refresh.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                recreate();
+            }
+        });
         setupPermission();
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
     }
@@ -80,7 +92,7 @@ public class SecondActivity extends AppCompatActivity {
         codeScanner.setCamera(CodeScanner.CAMERA_BACK);
         codeScanner.setFormats(CodeScanner.ALL_FORMATS);
         codeScanner.setAutoFocusMode(AutoFocusMode.SAFE);
-        codeScanner.setScanMode(ScanMode.CONTINUOUS);
+        codeScanner.setScanMode(ScanMode.SINGLE);
         codeScanner.setAutoFocusEnabled(true);
         codeScanner.setFlashEnabled(false);
 
@@ -88,16 +100,12 @@ public class SecondActivity extends AppCompatActivity {
                 -> {
             runOnUiThread(()
                     -> {
-                tail = result.getText();
-                String concat = BuildConfig.TEST_TICKET_URL + result.getText();
+                String concat = BuildConfig.TICKET_URL + tail + result.getText();
+                Log.i("Request", concat);
                 parseExampleOfJsonObject(concat);
-                binding.info.setText(concat);
                 vibrator.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
             });
         });
-
-
-        binding.qrScanner.setOnClickListener(view -> codeScanner.startPreview());
 
     }
 
@@ -123,49 +131,70 @@ public class SecondActivity extends AppCompatActivity {
                 .observeOn(Schedulers.io())
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .map(this::downloadJson)
-                .subscribe(this::parseJsonObject,
+                .subscribe(jsonString ->
+                        {
+                            Log.v("jsonString", jsonString);
+                            parseJsonObject(jsonString);
+                        },
                         throwable -> Log.e(TAG, "onCreate: ", throwable));
-        d.dispose();
     }
 
     private String downloadJson(String s) {
         OkHttpClient client = new OkHttpClient();
         Request request = new Request.Builder()
                 .url(s)
-                .header("Authorization", "Bearer " + BuildConfig.TEST_TOKEN)
+                .header("Authorization", "Bearer " + BuildConfig.MAIN_TOKEN)
                 .build();
         try (Response response = client.newCall(request).execute()) {
             return response.body().string();
         } catch (IOException exception) {
-            runOnUiThread(() -> Snackbar.make(this, binding.getRoot(), "Проверьте интернет", BaseTransientBottomBar.LENGTH_LONG).show());
+            runOnUiThread(() -> {
+                binding.internetearn.setVisibility(View.VISIBLE);
+                binding.info.setVisibility(View.GONE);
+                binding.internetearn.setText("Проверьте интернет соединение и обновите страницу");
+                binding.refresh.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.red));
+                binding.infoBlock.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.red));
+            });
             Log.e("MainActivity", "downloadJson: ", exception);
             return "";
         }
     }
 
     private void parseJsonObject(String json) {
-        Gson gson = new Gson();
         try {
-            SecondActivity.Todo todo = gson.fromJson(json, SecondActivity.Todo.class);
-            Log.e(TAG, "parseJsonObject: " + todo);
-        } catch(Exception e)
-        {
-            Log.e("THAT IS MISTAKE", e.toString());
-            runOnUiThread(()->
-                    Snackbar.make(this, binding.getRoot(), "Qr код от мероприятия, которого не существует", BaseTransientBottomBar.LENGTH_LONG).show());
-        }
-    }
+            JSONObject rootObj = new JSONObject(json);
+            JSONObject data = rootObj.getJSONObject("data");
+            String event = data.getString("event");
+            String hall = data.getString("hall");
+            String row = data.getString("row");
+            String column = data.getString("col");
+            total = event + '\n' + hall + '\n' + "Ряд: " + row + '\n' + "Место: " + column;
+            runOnUiThread(() ->
+            {
+                binding.info.setText(total);
+                binding.infoBlock.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.green));
+                binding.refresh.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.green));
+            });
 
-    public class Todo {
-        public boolean success;
-        public String message;
-
-        @Override
-        public String toString() {
-            return "Todo{" +
-                    "success=" + success +
-                    ", message=" + message + '\'' +
-                    '}';
+        } catch (Exception e) {
+            try {
+                JSONObject root = new JSONObject(json);
+                String message = root.getString("message");
+                runOnUiThread(() ->
+                {
+                    binding.infoBlock.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.red));
+                    binding.refresh.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.red));
+                    binding.info.setText(message);
+                });
+            } catch (Exception n) {
+                Log.e("THAT IS MISTAKE", e.toString());
+                runOnUiThread(() ->
+                {
+                    binding.infoBlock.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.red));
+                    binding.refresh.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.red));
+                    binding.info.setText("Ошибка, такого мероприятия не существует");
+                });
+            }
         }
     }
 }

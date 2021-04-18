@@ -1,44 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    tools:context=".MainActivity">
+    android:id="@+id/terr">
 
-    <com.budiyev.android.codescanner.CodeScannerView
-        android:id="@+id/qr_scanner"
+    <ImageView
+        android:id="@+id/logo"
+        android:layout_width="319dp"
+        android:layout_height="113dp"
+        android:layout_above="@+id/button"
+        android:layout_alignStart="@+id/button"
+        android:layout_alignEnd="@+id/button"
+        android:layout_centerHorizontal="true"
+        android:src="@drawable/unnamed" />
+
+    <com.google.android.material.button.MaterialButton
         android:layout_width="wrap_content"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        app:autoFocusButtonColor="@android:color/white"
-        app:autoFocusButtonVisible="true"
-        app:flashButtonColor="@color/white"
-        app:flashButtonVisible="true"
-        app:maskColor="#B0131010" />
+        android:id="@+id/button"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:text="выбрать площадку"
+        app:backgroundTint="#AF2424" />
 
-    <TextView
-        android:id="@+id/info"
-        android:layout_width="wrap_content"
-        android:layout_height="0dp"
-        android:layout_gravity="center_horizontal"
-        android:layout_weight="1"
-        android:hint="Отсканируйте билет"
-        android:paddingTop="50dp"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:textColor="@color/black" />
-
-    <TextView
-        android:id="@+id/textinput_error"
-        android:layout_height="0dp"
-        android:layout_width="wrap_content"
-        android:layout_weight="1"
-        android:visibility="gone"
-        android:paddingTop="50dp"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:textColor="@color/black"
-        />
-
-
-</LinearLayout>
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/listOfCinemas"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clickable="true"
+        android:visibility="gone" />
+</RelativeLayout>

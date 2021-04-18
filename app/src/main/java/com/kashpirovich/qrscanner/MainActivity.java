@@ -1,117 +1,106 @@
 package com.kashpirovich.qrscanner;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
+import androidx.loader.app.LoaderManager;
+import androidx.loader.content.AsyncTaskLoader;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
-import android.Manifest;
-import android.content.Context;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.os.VibrationEffect;
+
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.Toast;
+import android.widget.RelativeLayout;
 
-import com.budiyev.android.codescanner.AutoFocusMode;
-import com.budiyev.android.codescanner.CodeScanner;
-import com.budiyev.android.codescanner.CodeScannerView;
-import com.budiyev.android.codescanner.DecodeCallback;
-import com.budiyev.android.codescanner.ScanMode;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
-import com.google.gson.Gson;
-import com.google.zxing.Result;
-import com.kashpirovich.qrscanner.databinding.ActivityMainBinding;
+import com.kashpirovich.qrscanner.retrofit.APIinterface;
+import com.kashpirovich.qrscanner.retrofit.RetrofitClient;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.functions.Action;
+import io.reactivex.rxjava3.functions.Consumer;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-
-import android.os.Vibrator;
+import retrofit2.Retrofit;
 
 
 public class MainActivity extends AppCompatActivity {
-    private static final int CODE_CAM = 101;
-    private static final String TAG = "makeMeReal";
-    private CodeScanner codeScanner;
-    private ActivityMainBinding binding;
-    private String tail;
-    private Vibrator vibrator;
-
+    private final ArrayList<CinemasClass> todo = new ArrayList<>();
+    APIinterface apIinterface;
+    RecyclerView recyclerView;
+    RelativeLayout line;
+    CompositeDisposable compositeDisposable = new CompositeDisposable();
+    private PlatformRecycleAdapter platformRecycleAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = ActivityMainBinding.inflate(getLayoutInflater());
-        View v = binding.getRoot();
-        setContentView(v);
-        codeScan();
-        setupPermission();
-        vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-    }
+        setContentView(R.layout.activity_main);
+        recyclerView = findViewById(R.id.listOfCinemas);
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        codeScanner.startPreview();
-    }
 
-    @Override
-    protected void onPause() {
-        codeScanner.releaseResources();
-        super.onPause();
-    }
+        Retrofit retrofit = RetrofitClient.getInstance();
+        apIinterface = retrofit.create(APIinterface.class);
 
-    private void codeScan() {
-        codeScanner = new CodeScanner(this, binding.qrScanner);
-        codeScanner.setCamera(CodeScanner.CAMERA_BACK);
-        codeScanner.setFormats(CodeScanner.ALL_FORMATS);
-        codeScanner.setAutoFocusMode(AutoFocusMode.SAFE);
-        codeScanner.setScanMode(ScanMode.CONTINUOUS);
-        codeScanner.setAutoFocusEnabled(true);
-        codeScanner.setFlashEnabled(false);
+        Button b = findViewById(R.id.button);
+        ImageView vv = findViewById(R.id.logo);
+        line = findViewById(R.id.terr);
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
+        recyclerView.setLayoutManager(linearLayoutManager);
+        platformRecycleAdapter = new PlatformRecycleAdapter(this, new ArrayList<>());
+        recyclerView.setAdapter(platformRecycleAdapter);
 
-        codeScanner.setDecodeCallback(result
-                -> {
-            runOnUiThread(()
-                    -> {
-                tail = result.getText();
-                parseExampleOfJsonObject(BuildConfig.TEST_TICKET_URL /*https://task.arcomp.ru/api/check/ticket/584/1/ */ + result.getText());
-                String concat = BuildConfig.TEST_TICKET_URL + result.getText();
-                binding.info.setText(concat);
-                vibrator.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
-            });
+        //fetchData();
+
+        parseExampleOfJsonObject(BuildConfig.CINEMAS_URL);
+        b.setOnClickListener(vi ->
+        {
+            platformRecycleAdapter.setData(todo);
+            recyclerView.setVisibility(View.VISIBLE);
+            b.setVisibility(View.GONE);
+            vv.setVisibility(View.GONE);
         });
-
-
-        binding.qrScanner.setOnClickListener(view -> codeScanner.startPreview());
-
+    }
+/*
+    private void fetchData() {
+        compositeDisposable.add(apIinterface.getData()
+        .subscribeOn(Schedulers.io())
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe(new Consumer <Cinema2Class.Root>() {
+            @Override
+            public void accept(Cinema2Class.Root cinema2Classes) throws Throwable {
+                displayData(cinema2Classes);
+            }
+        }));
     }
 
-    private void setupPermission() {
-        int permission = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
-
-        if (permission != PackageManager.PERMISSION_GRANTED) makeRequest();
+    private void displayData(Cinema2Class.Root cinema2Classes) {
+        platformRecycleAdapter = new PlatformRecycleAdapter(this, cinemasClasses);
+        recyclerView.setAdapter(platformRecycleAdapter);
     }
-
-    private void makeRequest() {
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, CODE_CAM);
-    }
+    */
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == CODE_CAM)
-            if (grantResults.length == 0 || grantResults[0] != PackageManager.PERMISSION_GRANTED)
-                Toast.makeText(this, "Для работы приложения, нужно разрешение на использование камеры", Toast.LENGTH_LONG).show();
+    protected void onStop() {
+        compositeDisposable.clear();
+        super.onStop();
     }
 
     private void parseExampleOfJsonObject(String url) {
@@ -119,48 +108,45 @@ public class MainActivity extends AppCompatActivity {
                 .observeOn(Schedulers.io())
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .map(this::downloadJson)
-                .subscribe(this::parseJsonObject,
-                        throwable -> Log.e(TAG, "onCreate: ", throwable));
+                .subscribe(jsonString -> {
+                            parseJsonObject(jsonString);
+//                    Log.e("TAHHHH", jsonString);
+                        },
+                        throwable -> Log.e("TAG", "onCreate: ", throwable));
+
     }
 
     private String downloadJson(String s) {
         OkHttpClient client = new OkHttpClient();
         Request request = new Request.Builder()
                 .url(s)
-                .header("Authorization", "Bearer " + BuildConfig.TEST_TOKEN)
+                .header("Authorization", "Bearer " + BuildConfig.MAIN_TOKEN)
                 .build();
         try (Response response = client.newCall(request).execute()) {
             return response.body().string();
         } catch (IOException exception) {
-            runOnUiThread(() -> Snackbar.make(this, binding.getRoot(), "Проверьте интернет", BaseTransientBottomBar.LENGTH_LONG).show());
+            runOnUiThread(() -> Snackbar.make(this, line, "Проверьте интернет-соединение", BaseTransientBottomBar.LENGTH_LONG).show());
             Log.e("MainActivity", "downloadJson: ", exception);
             return "";
         }
     }
 
     private void parseJsonObject(String json) {
-        Gson gson = new Gson();
-            try {
-                Todo todo = gson.fromJson(json, Todo.class);
-                Log.e(TAG, "parseJsonObject: " + todo);
-            } catch(Exception e)
-        {
+        //ArrayList<CinemasClass> nw = new ArrayList<>();
+        try {
+            JSONObject rootObj = new JSONObject(json);
+            JSONArray data = rootObj.getJSONArray("data");
+            for (int i = 0; i < data.length(); i++) {
+                JSONObject currentItem = data.getJSONObject(i);
+                String id = currentItem.getString("id");
+                String name = currentItem.getString("name");
+                String address = currentItem.getString("address");
+                CinemasClass currentGate = new CinemasClass(id, name, address);
+                todo.add(currentGate);
+            }
+        } catch (Exception e) {
             Log.e("THAT IS MISTAKE", e.toString());
-            runOnUiThread(()->
-                Toast.makeText(this, "Что-то не то", Toast.LENGTH_LONG).show());
-        }
- }
-
-    public class Todo {
-        public boolean success;
-        public String message;
-
-        @Override
-        public String toString() {
-            return "Todo{" +
-                    "success=" + success +
-                    ", message=" + message + '\'' +
-                    '}';
         }
     }
+
 }
