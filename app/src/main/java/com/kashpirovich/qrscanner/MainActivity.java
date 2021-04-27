@@ -75,50 +75,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 //
     }
 
-    private void parseExampleOfJsonObject(String url) {
-        //                    Log.e("TAHHHH", jsonString);
-        Disposable d = Single.just(url)
-                .observeOn(Schedulers.io())
-                .subscribeOn(AndroidSchedulers.mainThread())
-                .map(this::downloadJson)
-                .subscribe(this::parseJsonObject,
-                        throwable -> Log.e("TAG", "onCreate: ", throwable));
-
-    }
-
-    private String downloadJson(String s) {
-        OkHttpClient client = new OkHttpClient();
-        Request request = new Request.Builder()
-                .url(s)
-                .header("Authorization", "Bearer " + BuildConfig.MAIN_TOKEN)
-                .build();
-        try (Response response = client.newCall(request).execute()) {
-            return response.body().string();
-        } catch (IOException exception) {
-            runOnUiThread(() -> Snackbar.make(this, line, "Проверьте интернет-соединение", BaseTransientBottomBar.LENGTH_LONG).show());
-            Log.e("MainActivity", "downloadJson: ", exception);
-            return "";
-        }
-    }
-
-    private void parseJsonObject(String json) {
-        //ArrayList<CinemasClass> nw = new ArrayList<>();
-        try {
-            JSONObject rootObj = new JSONObject(json);
-            JSONArray data = rootObj.getJSONArray("data");
-            for (int i = 0; i < data.length(); i++) {
-                JSONObject currentItem = data.getJSONObject(i);
-                String id = currentItem.getString("id");
-                String name = currentItem.getString("name");
-                String address = currentItem.getString("address");
-                CinemasClass currentGate = new CinemasClass(id, name, address);
-                todo.add(currentGate);
-            }
-        } catch (Exception e) {
-            Log.e("THAT IS MISTAKE", e.toString());
-        }
-    }
-
     @NonNull
     @Override
     public Loader<ArrayList<CinemasClass>> onCreateLoader(int id, @Nullable Bundle args) {
