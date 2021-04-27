@@ -3,13 +3,14 @@ package com.kashpirovich.qrscanner;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
+
+import android.os.Build;
 import android.os.Bundle;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.util.Log;
 import android.view.View;
-import android.widget.ImageButton;
+
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -20,12 +21,10 @@ import androidx.core.content.ContextCompat;
 import com.budiyev.android.codescanner.AutoFocusMode;
 import com.budiyev.android.codescanner.CodeScanner;
 import com.budiyev.android.codescanner.ScanMode;
-import com.google.android.material.snackbar.BaseTransientBottomBar;
-import com.google.android.material.snackbar.Snackbar;
-import com.google.gson.Gson;
+
 import com.kashpirovich.qrscanner.databinding.ThirdWindowBinding;
 
-import org.json.JSONArray;
+
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -98,7 +97,9 @@ public class ThirdActivity extends AppCompatActivity {
                 String concat = BuildConfig.TICKET_URL + tail + result.getText();
                 Log.i("Request", concat);
                 parseExampleOfJsonObject(concat);
-                vibrator.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    vibrator.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
+                }
             });
         });
 
