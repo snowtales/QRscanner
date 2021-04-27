@@ -1,7 +1,11 @@
 package com.kashpirovich.qrscanner;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import androidx.loader.app.LoaderManager;
+import androidx.loader.content.Loader;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -16,12 +20,14 @@ import android.widget.RelativeLayout;
 
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
+import com.kashpirovich.qrscanner.loaders.CinemaLoader;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
@@ -36,11 +42,11 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<ArrayList<CinemasClass>> {
     private final ArrayList<CinemasClass> todo = new ArrayList<>();
     RecyclerView recyclerView;
     RelativeLayout line;
-    CompositeDisposable compositeDisposable = new CompositeDisposable();
+    private LinearLayoutManager linearLayoutManager;
     private PlatformRecycleAdapter platformRecycleAdapter;
 
     @Override
@@ -49,28 +55,24 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         recyclerView = findViewById(R.id.listOfCinemas);
 
-        Button b = findViewById(R.id.button);
-        ImageView vv = findViewById(R.id.logo);
+//        Button b = findViewById(R.id.button);
+//        ImageView vv = findViewById(R.id.logo);
         line = findViewById(R.id.terr);
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
+        linearLayoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(linearLayoutManager);
         platformRecycleAdapter = new PlatformRecycleAdapter(this, new ArrayList<>());
         recyclerView.setAdapter(platformRecycleAdapter);
 
-        parseExampleOfJsonObject(BuildConfig.CINEMAS_URL);
-        b.setOnClickListener(vi ->
-        {
-            platformRecycleAdapter.setData(todo);
-            recyclerView.setVisibility(View.VISIBLE);
-            b.setVisibility(View.GONE);
-            vv.setVisibility(View.GONE);
-        });
-    }
-
-    @Override
-    protected void onStop() {
-        compositeDisposable.clear();
-        super.onStop();
+        LoaderManager.getInstance(this).initLoader(1, null, this);
+//        parseExampleOfJsonObject(BuildConfig.CINEMAS_URL);
+//        b.setOnClickListener(vi ->
+//        {
+//            platformRecycleAdapter.setData(todo);
+//            recyclerView.setVisibility(View.VISIBLE);
+//            b.setVisibility(View.GONE);
+//            vv.setVisibility(View.GONE);
+//        });
+//
     }
 
     private void parseExampleOfJsonObject(String url) {
@@ -117,4 +119,21 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @NonNull
+    @Override
+    public Loader<ArrayList<CinemasClass>> onCreateLoader(int id, @Nullable Bundle args) {
+        return new CinemaLoader(this, BuildConfig.CINEMAS_URL);
+    }
+
+    @Override
+    public void onLoadFinished(@NonNull Loader<ArrayList<CinemasClass>> loader, ArrayList<CinemasClass> data) {
+        linearLayoutManager.removeAllViews();
+        platformRecycleAdapter.setData(data);
+    }
+
+    @Override
+    public void onLoaderReset(@NonNull Loader<ArrayList<CinemasClass>> loader) {
+        linearLayoutManager.removeAllViews();
+        platformRecycleAdapter.setData(new ArrayList<>());
+    }
 }
