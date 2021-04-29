@@ -7,12 +7,17 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.RelativeLayout;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.loader.app.LoaderManager;
+import androidx.loader.content.Loader;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
+import com.kashpirovich.qrscanner.loaders.EventsLoader;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -30,15 +35,13 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-public class EventActivity extends AppCompatActivity {
-    private final ArrayList<EventClass> maydo = new ArrayList<>();
+public class EventActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<ArrayList<EventClass>> {
     GatesClass getter;
     LinearLayoutManager lLM;
     RecyclerView recyclerView;
     RelativeLayout line;
     int idVenue;
     int gatesId;
-    Map<Integer, String> mapFilm = new HashMap();
     private EventsAdapter eventsAdapter;
 
     @Override
@@ -54,108 +57,35 @@ public class EventActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(lLM);
         recyclerView.setAdapter(eventsAdapter);
         Button newbut = findViewById(R.id.get_events);
-        newbut.setOnClickListener(v -> {
-            eventsAdapter.setData(maydo);
-            newbut.setVisibility(View.GONE);
-            recyclerView.setVisibility(View.VISIBLE);
-        });
-
         if (bungle != null) {
             getter = getIntent().getParcelableExtra("gates");
         }
         gatesId = getter.getId();
         idVenue = getter.getIdVenue();
+
+        LoaderManager.getInstance(this).initLoader(1, null, this);
+        newbut.setOnClickListener(v -> {
+            newbut.setVisibility(View.GONE);
+            recyclerView.setVisibility(View.VISIBLE);
+        });
         Log.v("idVuenue", idVenue + "");
-        parseExampleOfJsonObject(BuildConfig.EVENT_URL);
-        parseFilms(BuildConfig.FILM_URL);
     }
 
-    private void parseExampleOfJsonObject(String url) {
-        Disposable d = Observable.just(url)
-                .observeOn(Schedulers.io())
-                .subscribeOn(AndroidSchedulers.mainThread())
-                .map(this::downloadJson)
-                .subscribe(jsonString -> parseJsonObject(jsonString),
-                        throwable -> Log.e("TAG", "onCreate: ", throwable));
-
+    @NonNull
+    @Override
+    public Loader<ArrayList<EventClass>> onCreateLoader(int id, @Nullable Bundle args) {
+        return new EventsLoader(this, BuildConfig.EVENT_URL, BuildConfig.FILM_URL, idVenue, gatesId);
     }
 
-    private void parseFilms(String url) {
-        Disposable d = Observable.just(url)
-                .observeOn(Schedulers.io())
-                .subscribeOn(AndroidSchedulers.mainThread())
-                .map(this::downloadJson)
-                .subscribe(jsonString ->
-                        {
-                            parseFilmsJson(jsonString);
-                        },
-                        throwable -> Log.e("TAG", "onCreate: ", throwable));
+    @Override
+    public void onLoadFinished(@NonNull Loader<ArrayList<EventClass>> loader, ArrayList<EventClass> data) {
+        lLM.removeAllViews();
+        eventsAdapter.setData(data);
     }
 
-    private void parseFilmsJson(String s) {
-        try {
-            JSONObject rootObj = new JSONObject(s);
-            JSONArray data = rootObj.getJSONArray("data");
-            for (int i = 0; i < data.length(); i++) {
-                JSONObject currentItem = data.getJSONObject(i);
-                int id = currentItem.getInt("id");
-                String name = currentItem.getString("nameRus");
-                mapFilm.put(id, name);
-            }
-        } catch (Exception e) {
-            Log.e("THAT IS MISTAKE", e.toString());
-            runOnUiThread(() ->
-                    Snackbar.make(this, line, "что-то не так", BaseTransientBottomBar.LENGTH_LONG).show());
-        }
-    }
-
-    private String downloadJson(String s) {
-        OkHttpClient client = new OkHttpClient();
-        Request request = new Request.Builder()
-                .url(s)
-                .header("Authorization", "Bearer " + BuildConfig.MAIN_TOKEN)
-                .build();
-        try (Response response = client.newCall(request).execute()) {
-            return response.body().string();
-        } catch (IOException exception) {
-            runOnUiThread(() -> Snackbar.make(this, line, "Проверьте интернет-соединение", BaseTransientBottomBar.LENGTH_LONG).show());
-            Log.e("MainActivity", "downloadJson: ", exception);
-            return "";
-        }
-    }
-
-    private void parseJsonObject(String json) {
-        //ArrayList<GatesClass> gatesClasses = new ArrayList<>();
-        try {
-            JSONObject rootObj = new JSONObject(json);
-            JSONArray data = rootObj.getJSONArray("data");
-            int count = 0;
-            for (int i = 0; i < data.length(); i++) {
-                JSONObject currentItem = data.getJSONObject(i);
-                JSONObject hallObj = currentItem.getJSONObject("hall");
-                JSONObject venue = hallObj.getJSONObject("venue");
-                int idVen = venue.getInt("id");
-                if (idVen == idVenue) {
-                    int id = currentItem.getInt("id");
-                    JSONArray films = currentItem.getJSONArray("films");
-                    JSONObject ne = films.getJSONObject(0);
-                    int filmId = ne.getInt("film");
-                    String nameFilm = mapFilm.get(filmId);
-                    //Log.v("FILMS", mapFilm.get(filmId));
-                    String date = currentItem.getString("dateStart").replace("-", " ");
-                    String day = date.substring(8, 10);
-                    String time = date.substring(11);
-                    String finalDate = day + " апреля " + time;
-
-                    EventClass pussy = new EventClass(id, idVen, nameFilm, finalDate, gatesId);
-                    maydo.add(pussy);
-                }
-            }
-
-        } catch (Exception e) {
-            Log.e("THAT IS MISTAKE", e.toString());
-            runOnUiThread(() ->
-                    Snackbar.make(this, line, "ошибка приложения, попробуйте еще раз", BaseTransientBottomBar.LENGTH_LONG).show());
-        }
+    @Override
+    public void onLoaderReset(@NonNull Loader<ArrayList<EventClass>> loader) {
+        lLM.removeAllViews();
+        eventsAdapter.setData(new ArrayList<>());
     }
 }

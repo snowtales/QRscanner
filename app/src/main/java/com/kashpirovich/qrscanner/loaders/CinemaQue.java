@@ -19,8 +19,8 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-public class QueUtils {
-    private QueUtils() {
+public class CinemaQue {
+    private CinemaQue() {
     }
 
     public static List<CinemasClass> fetchData(String requestUrl) {
@@ -32,7 +32,7 @@ public class QueUtils {
         return listOfCinemas;
     }
 
-    private static String makeHttpRequest(String url) {
+    public static String makeHttpRequest(String url) {
         OkHttpClient client = new OkHttpClient();
         Request request = new Request.Builder()
                 .url(url)

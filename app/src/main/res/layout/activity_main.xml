@@ -14,7 +14,7 @@
         android:layout_alignEnd="@+id/button"
         android:layout_centerHorizontal="true"
         android:src="@drawable/unnamed"
-        android:visibility="gone" />
+        android:visibility="visible" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/button"
@@ -22,7 +22,7 @@
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:text="выбрать площадку"
-        android:visibility="gone"
+        android:visibility="visible"
         app:backgroundTint="#AF2424" />
 
     <androidx.recyclerview.widget.RecyclerView
@@ -30,5 +30,5 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clickable="true"
-        android:visibility="visible" />
+        android:visibility="gone" />
 </RelativeLayout>

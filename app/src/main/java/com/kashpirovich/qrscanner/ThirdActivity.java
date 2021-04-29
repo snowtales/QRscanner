@@ -8,6 +8,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 
@@ -62,9 +64,33 @@ public class ThirdActivity extends AppCompatActivity {
         gatesId = getter.getGatesId() + "/";
         tail = eventId + gatesId;
 
+        binding.editText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.toString().trim().length() > 1) {
+                    binding.editText.setFocusable(false);
+                    String concat = BuildConfig.TICKET_URL + tail + s.toString();
+                    Log.i("Request", concat);
+                    parseExampleOfJsonObject(concat);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
+
 
         codeScan();
-        binding.refresh.setOnClickListener(v1 -> recreate());
+        binding.refresh.setOnClickListener(v1 -> {
+            recreate();
+            binding.editText.getText().clear();
+        });
         setupPermission();
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
     }

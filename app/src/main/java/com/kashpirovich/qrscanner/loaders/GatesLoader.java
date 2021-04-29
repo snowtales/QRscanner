@@ -6,14 +6,14 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.loader.content.AsyncTaskLoader;
 
-import com.kashpirovich.qrscanner.CinemasClass;
+import com.kashpirovich.qrscanner.GatesClass;
 
 import java.util.List;
 
-public class CinemaLoader extends AsyncTaskLoader {
+public class GatesLoader extends AsyncTaskLoader {
     private String mUrl;
 
-    public CinemaLoader(@NonNull Context context, String url) {
+    public GatesLoader(@NonNull Context context, String url) {
         super(context);
         mUrl = url;
     }
@@ -25,8 +25,7 @@ public class CinemaLoader extends AsyncTaskLoader {
 
     @Nullable
     @Override
-    public List<CinemasClass> loadInBackground() {
-        List<CinemasClass> cinemaList = CinemaQue.fetchData(mUrl);
-        return cinemaList;
+    public Object loadInBackground() {
+        return GatesQue.fetchData(mUrl);
     }
 }
