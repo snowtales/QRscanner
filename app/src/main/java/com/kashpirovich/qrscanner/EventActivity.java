@@ -54,6 +54,8 @@ public class EventActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(lLM);
         recyclerView.setAdapter(eventsAdapter);
         Button newbut = findViewById(R.id.get_events);
+        parseExampleOfJsonObject(BuildConfig.EVENT_URL);
+        parseFilms(BuildConfig.FILM_URL);
         newbut.setOnClickListener(v -> {
             eventsAdapter.setData(maydo);
             newbut.setVisibility(View.GONE);
@@ -66,8 +68,7 @@ public class EventActivity extends AppCompatActivity {
         gatesId = getter.getId();
         idVenue = getter.getIdVenue();
         Log.v("idVuenue", idVenue + "");
-        parseExampleOfJsonObject(BuildConfig.EVENT_URL);
-        parseFilms(BuildConfig.FILM_URL);
+
     }
 
     private void parseExampleOfJsonObject(String url) {
