@@ -1,18 +1,22 @@
 package com.kashpirovich.qrscanner;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 
+import android.inputmethodservice.Keyboard;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -64,16 +68,17 @@ public class ThirdActivity extends AppCompatActivity {
         gatesId = getter.getGatesId() + "/";
         tail = eventId + gatesId;
 
+
         binding.editText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
             }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
+
                 if (s.toString().trim().length() > 1) {
-                    binding.editText.setFocusable(false);
+                    //binding.editText.setFocusable(false);
                     String concat = BuildConfig.TICKET_URL + tail + s.toString();
                     Log.i("Request", concat);
                     parseExampleOfJsonObject(concat);
@@ -117,17 +122,15 @@ public class ThirdActivity extends AppCompatActivity {
         codeScanner.setFlashEnabled(false);
 
         codeScanner.setDecodeCallback(result
+                -> runOnUiThread(()
                 -> {
-            runOnUiThread(()
-                    -> {
-                String concat = BuildConfig.TICKET_URL + tail + result.getText();
-                Log.i("Request", concat);
-                parseExampleOfJsonObject(concat);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    vibrator.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
-                }
-            });
-        });
+            String concat = BuildConfig.TICKET_URL + tail + result.getText();
+            Log.i("Request", concat);
+            parseExampleOfJsonObject(concat);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                vibrator.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
+            }
+        }));
 
     }
 
