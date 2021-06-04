@@ -1,17 +1,10 @@
 package com.kashpirovich.qrscanner;
 
-import androidx.appcompat.app.AppCompatActivity;
-
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.os.Bundle;
-
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
-
 import android.widget.RelativeLayout;
 
 import com.google.android.material.snackbar.BaseTransientBottomBar;
@@ -23,13 +16,13 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.ArrayList;
 
-
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
-
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.disposables.Disposable;
-
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -51,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
 
         Button b = findViewById(R.id.button);
         ImageView vv = findViewById(R.id.logo);
+
         line = findViewById(R.id.terr);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(linearLayoutManager);
@@ -60,11 +54,15 @@ public class MainActivity extends AppCompatActivity {
         parseExampleOfJsonObject(BuildConfig.CINEMAS_URL);
         b.setOnClickListener(vi ->
         {
-            platformRecycleAdapter.setData(todo);
             recyclerView.setVisibility(View.VISIBLE);
             b.setVisibility(View.GONE);
             vv.setVisibility(View.GONE);
         });
+    }
+
+    private void updateUi(){
+        platformRecycleAdapter.setData(todo);
+        findViewById(R.id.progress).setVisibility(View.GONE);
     }
 
     @Override
@@ -74,14 +72,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void parseExampleOfJsonObject(String url) {
-        //                    Log.e("TAHHHH", jsonString);
         Disposable d = Single.just(url)
                 .observeOn(Schedulers.io())
-                .subscribeOn(AndroidSchedulers.mainThread())
                 .map(this::downloadJson)
-                .subscribe(this::parseJsonObject,
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(jsonString ->
+                        {
+                            parseJsonObject(jsonString);
+                            updateUi();
+                        },
                         throwable -> Log.e("TAG", "onCreate: ", throwable));
-
     }
 
     private String downloadJson(String s) {

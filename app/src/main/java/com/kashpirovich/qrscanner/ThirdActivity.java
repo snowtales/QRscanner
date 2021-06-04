@@ -3,32 +3,30 @@ package com.kashpirovich.qrscanner;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
-
 import android.os.Build;
 import android.os.Bundle;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
-
 import android.widget.Toast;
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 
 import com.budiyev.android.codescanner.AutoFocusMode;
 import com.budiyev.android.codescanner.CodeScanner;
 import com.budiyev.android.codescanner.ScanMode;
-
 import com.kashpirovich.qrscanner.databinding.ThirdWindowBinding;
-
 
 import org.json.JSONObject;
 
 import java.io.IOException;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.disposables.Disposable;
@@ -48,6 +46,7 @@ public class ThirdActivity extends AppCompatActivity {
     private String total;
 
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,7 +60,28 @@ public class ThirdActivity extends AppCompatActivity {
         eventId = getter.getId() + "/";
         gatesId = getter.getGatesId() + "/";
         tail = eventId + gatesId;
+        binding.editText.setFocusedByDefault(true);
 
+        binding.editText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+                if (s.toString().trim().length() > 1) {
+                    //binding.editText.setFocusable(false);
+                    String concat = BuildConfig.TICKET_URL + tail + s.toString();
+                    Log.i("Request", concat);
+                    parseExampleOfJsonObject(concat);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
 
         codeScan();
         binding.refresh.setOnClickListener(v1 -> recreate());

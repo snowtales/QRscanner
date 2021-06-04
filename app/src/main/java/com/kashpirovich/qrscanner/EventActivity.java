@@ -1,15 +1,9 @@
 package com.kashpirovich.qrscanner;
 
 import android.os.Bundle;
-import android.os.Parcel;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.RelativeLayout;
-
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
@@ -22,6 +16,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.disposables.Disposable;
@@ -53,30 +50,34 @@ public class EventActivity extends AppCompatActivity {
         eventsAdapter = new EventsAdapter(this);
         recyclerView.setLayoutManager(lLM);
         recyclerView.setAdapter(eventsAdapter);
-        Button newbut = findViewById(R.id.get_events);
+
         parseExampleOfJsonObject(BuildConfig.EVENT_URL);
         parseFilms(BuildConfig.FILM_URL);
-        newbut.setOnClickListener(v -> {
-            eventsAdapter.setData(maydo);
-            newbut.setVisibility(View.GONE);
-            recyclerView.setVisibility(View.VISIBLE);
-        });
 
         if (bungle != null) {
             getter = getIntent().getParcelableExtra("gates");
         }
+
         gatesId = getter.getId();
         idVenue = getter.getIdVenue();
         Log.v("idVuenue", idVenue + "");
 
     }
 
+    private void updateList() {
+        eventsAdapter.setData(maydo);
+        findViewById(R.id.vProgress).setVisibility(View.GONE);
+    }
+
     private void parseExampleOfJsonObject(String url) {
         Disposable d = Observable.just(url)
                 .observeOn(Schedulers.io())
-                .subscribeOn(AndroidSchedulers.mainThread())
                 .map(this::downloadJson)
-                .subscribe(jsonString -> parseJsonObject(jsonString),
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(jsonString -> {
+                            parseJsonObject(jsonString);
+                            updateList();
+                        },
                         throwable -> Log.e("TAG", "onCreate: ", throwable));
 
     }
@@ -130,7 +131,6 @@ public class EventActivity extends AppCompatActivity {
         try {
             JSONObject rootObj = new JSONObject(json);
             JSONArray data = rootObj.getJSONArray("data");
-            int count = 0;
             for (int i = 0; i < data.length(); i++) {
                 JSONObject currentItem = data.getJSONObject(i);
                 JSONObject hallObj = currentItem.getJSONObject("hall");
@@ -142,7 +142,6 @@ public class EventActivity extends AppCompatActivity {
                     JSONObject ne = films.getJSONObject(0);
                     int filmId = ne.getInt("film");
                     String nameFilm = mapFilm.get(filmId);
-                    //Log.v("FILMS", mapFilm.get(filmId));
                     String date = currentItem.getString("dateStart").replace("-", " ");
                     String day = date.substring(8, 10);
                     String time = date.substring(11);

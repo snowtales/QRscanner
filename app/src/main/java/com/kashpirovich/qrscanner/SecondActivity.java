@@ -1,21 +1,9 @@
 package com.kashpirovich.qrscanner;
 
-import android.content.Context;
 import android.os.Bundle;
-import android.os.Vibrator;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.loader.app.LoaderManager;
-import androidx.loader.content.Loader;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
@@ -25,8 +13,10 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.disposables.Disposable;
@@ -60,29 +50,25 @@ public class SecondActivity extends AppCompatActivity {
         if (bungle != null) {
             getter = getIntent().getParcelableExtra("id");
         }
-        //this.setTitle(getter.getName());
         Log.e("finalUrl is: ", BuildConfig.GATES_URL + getter.getId());
-        Button b = findViewById(R.id.get_gate);
         parseExampleOfJsonObject(BuildConfig.GATES_URL + getter.getId());
-        b.setOnClickListener(v ->
-        {
-            b.setVisibility(View.GONE);
-            gatesRecycleAdapter.setData(todo);
-            recyclerView.setVisibility(View.VISIBLE);
-        });
-        Observable.just(todo)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(v -> gatesRecycleAdapter.setData(todo),
-                        throwable -> Log.e("TAG", "onCreate: ", throwable));
+    }
 
+    private void updateUi(){
+        gatesRecycleAdapter.setData(todo);
+        findViewById(R.id.progress2).setVisibility(View.GONE);
     }
 
     private void parseExampleOfJsonObject(String url) {
         Disposable d = Observable.just(url)
                 .observeOn(Schedulers.io())
-                .subscribeOn(AndroidSchedulers.mainThread())
                 .map(this::downloadJson)
-                .subscribe(this::parseJsonObject,
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(jsonString ->
+                {
+                    parseJsonObject(jsonString);
+                    updateUi();
+                },
                         throwable -> Log.e("TAG", "onCreate: ", throwable));
 
     }
