@@ -3,6 +3,8 @@ package com.kashpirovich.qrscanner;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.hardware.input.InputManager;
+import android.inputmethodservice.InputMethodService;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.VibrationEffect;
@@ -11,6 +13,8 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import com.budiyev.android.codescanner.AutoFocusMode;
@@ -44,9 +48,10 @@ public class ThirdActivity extends AppCompatActivity {
     private String tail, eventId, gatesId;
     private Vibrator vibrator;
     private String total;
+    private String concat = "";
 
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
+    // @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,28 +65,35 @@ public class ThirdActivity extends AppCompatActivity {
         eventId = getter.getId() + "/";
         gatesId = getter.getGatesId() + "/";
         tail = eventId + gatesId;
-        binding.editText.setFocusedByDefault(true);
+        EditText edit = binding.editText;
 
-        binding.editText.addTextChangedListener(new TextWatcher() {
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+
+        edit.requestFocus();
+
+        imm.hideSoftInputFromWindow(edit.getWindowToken(), 0);
+        edit.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
             }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-                if (s.toString().trim().length() > 1) {
-                    //binding.editText.setFocusable(false);
-                    String concat = BuildConfig.TICKET_URL + tail + s.toString();
-                    Log.i("Request", concat);
-                    parseExampleOfJsonObject(concat);
-                }
             }
 
             @Override
             public void afterTextChanged(Editable s) {
+                if (s.toString().trim().length() > 1) {
+                    //concat = BuildConfig.TICKET_URL + tail + s.toString();
+                    //Log.i("Request", concat);
+                    // parseExampleOfJsonObject(concat);
+                }
             }
         });
+
+        concat = BuildConfig.TICKET_URL + tail + edit.getText().toString();
+
+        Log.i("Request2", concat);
 
         codeScan();
         binding.refresh.setOnClickListener(v1 -> recreate());

@@ -70,7 +70,7 @@ public class EventActivity extends AppCompatActivity {
     }
 
     private void parseExampleOfJsonObject(String url) {
-        Disposable d = Observable.just(url)
+       Observable.just(url)
                 .observeOn(Schedulers.io())
                 .map(this::downloadJson)
                 .observeOn(AndroidSchedulers.mainThread())
@@ -83,14 +83,12 @@ public class EventActivity extends AppCompatActivity {
     }
 
     private void parseFilms(String url) {
-        Disposable d = Observable.just(url)
+        Observable.just(url)
                 .observeOn(Schedulers.io())
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .map(this::downloadJson)
                 .subscribe(jsonString ->
-                        {
-                            parseFilmsJson(jsonString);
-                        },
+                                parseFilmsJson(jsonString),
                         throwable -> Log.e("TAG", "onCreate: ", throwable));
     }
 
