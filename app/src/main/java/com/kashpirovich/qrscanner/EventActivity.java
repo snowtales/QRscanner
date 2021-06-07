@@ -21,7 +21,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.Observable;
-import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -142,7 +141,7 @@ public class EventActivity extends AppCompatActivity {
                     String nameFilm = mapFilm.get(filmId);
                     String date = currentItem.getString("dateStart").replace("-", " ");
                     String day = date.substring(8, 10);
-                    String time = date.substring(11);
+                    String time = date.substring(11, 15);
                     String finalDate = day + " апреля " + time;
 
                     EventClass pussy = new EventClass(id, idVen, nameFilm, finalDate, gatesId);

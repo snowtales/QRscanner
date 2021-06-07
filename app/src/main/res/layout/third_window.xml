@@ -3,11 +3,11 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/linearLY"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context=".MainActivity">
-
     <com.budiyev.android.codescanner.CodeScannerView
         android:id="@+id/qr_scanner"
         android:layout_width="wrap_content"
@@ -18,13 +18,27 @@
         app:flashButtonColor="@color/white"
         app:flashButtonVisible="true"
         app:maskColor="#B0131010" />
-
     <RelativeLayout
         android:id="@+id/info_block"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:layout_weight="1"
         android:background="@color/white">
+
+        <EditText
+            android:id="@+id/edit_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="36dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:focusableInTouchMode="true"
+            android:hint="Или нажмите сюда, чтобы ввести c помощью сканера"
+            android:lines="2"
+            android:paddingLeft="36dp"
+            android:paddingRight="36dp"
+            android:textColorHint="@color/gray" />
 
         <ImageButton
             android:id="@+id/refresh"
@@ -35,44 +49,31 @@
             android:src="@drawable/ic_baseline_refresh_24" />
 
         <TextView
-            android:id="@+id/info"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:hint="Отсканируйте билет"
-            android:paddingLeft="18dp"
-            android:paddingTop="50dp"
-            android:paddingRight="18dp"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textColor="@color/black" />
-
-        <TextView
             android:id="@+id/internetearn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/info"
             android:layout_gravity="center_horizontal"
             android:paddingLeft="18dp"
-            android:paddingTop="50dp"
             android:paddingRight="18dp"
+            android:paddingTop="50dp"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:textColor="@color/black"
             android:visibility="gone" />
 
-        <EditText
-            android:id="@+id/edit_text"
-            android:layout_marginBottom="36dp"
-            android:layout_marginLeft="16dp"
-            android:layout_marginRight="16dp"
+        <TextView
+            android:id="@+id/info"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:focusableInTouchMode="true"
-            android:hint="Или нажмите сюда, чтобы ввести c помощью сканера"
-            android:lines="2"
-            android:paddingLeft="36dp"
-            android:paddingRight="36dp"
-            android:textColorHint="@color/gray" />
+            android:layout_gravity="center_horizontal"
+            android:hint="Отсканируйте билет"
+            android:paddingLeft="18dp"
+            android:paddingRight="18dp"
+            android:paddingTop="50dp"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textColor="@color/black" />
     </RelativeLayout>
+
+
 
 </LinearLayout>

@@ -3,8 +3,6 @@ package com.kashpirovich.qrscanner;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.hardware.input.InputManager;
-import android.inputmethodservice.InputMethodService;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.VibrationEffect;
@@ -15,23 +13,27 @@ import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.budiyev.android.codescanner.AutoFocusMode;
 import com.budiyev.android.codescanner.CodeScanner;
 import com.budiyev.android.codescanner.ScanMode;
+import com.google.android.material.snackbar.Snackbar;
 import com.kashpirovich.qrscanner.databinding.ThirdWindowBinding;
 
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
@@ -49,6 +51,8 @@ public class ThirdActivity extends AppCompatActivity {
     private Vibrator vibrator;
     private String total;
     private String concat = "";
+    LinearLayout llm;
+
 
 
     // @RequiresApi(api = Build.VERSION_CODES.O)
@@ -57,7 +61,9 @@ public class ThirdActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ThirdWindowBinding.inflate(getLayoutInflater());
         Bundle bungle = getIntent().getExtras();
+        llm = findViewById(R.id.linearLY);
         View v = binding.getRoot();
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         setContentView(v);
         if (bungle != null) {
             getter = getIntent().getParcelableExtra("event");
@@ -66,8 +72,6 @@ public class ThirdActivity extends AppCompatActivity {
         gatesId = getter.getGatesId() + "/";
         tail = eventId + gatesId;
         EditText edit = binding.editText;
-
-        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 
         edit.requestFocus();
 
@@ -83,10 +87,20 @@ public class ThirdActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable s) {
+
                 if (s.toString().trim().length() > 1) {
                     //concat = BuildConfig.TICKET_URL + tail + s.toString();
                     //Log.i("Request", concat);
                     // parseExampleOfJsonObject(concat);
+                    Observable.just(s)
+                            .subscribeOn(Schedulers.io())
+                            .debounce(2, TimeUnit.SECONDS)
+                            .subscribe(obg -> {
+                                        concat = BuildConfig.TICKET_URL + tail + obg.toString();
+                                        Log.i("Request", concat);
+                                        parseExampleOfJsonObject(concat);
+                                    },
+                                    throwable -> Log.e("TAG", "onCreate: ", throwable));
                 }
             }
         });
@@ -179,9 +193,11 @@ public class ThirdActivity extends AppCompatActivity {
             runOnUiThread(() -> {
                 binding.internetearn.setVisibility(View.VISIBLE);
                 binding.info.setVisibility(View.GONE);
-                binding.internetearn.setText("Проверьте интернет соединение и обновите страницу");
-                binding.refresh.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.red));
-                binding.infoBlock.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.red));
+                Snackbar.make(llm,"Проверьте интернет соединение и обновите страницу",Snackbar.LENGTH_SHORT).setBackgroundTint(
+                        ResourcesCompat.getColor(getResources(), R.color.red, null)).show();
+                //binding.internetearn.setText("Проверьте интернет соединение и обновите страницу");
+                //binding.refresh.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.red));
+                //binding.infoBlock.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.red));
             });
             Log.e("MainActivity", "downloadJson: ", exception);
             return "";
@@ -200,6 +216,9 @@ public class ThirdActivity extends AppCompatActivity {
             runOnUiThread(() ->
             {
                 binding.info.setText(total);
+                Snackbar.make(llm,"Проверьте интернет соединение и обновите страницу",Snackbar.LENGTH_SHORT).setBackgroundTint(
+                        ResourcesCompat.getColor(getResources(), R.color.red, null)
+                ).show();
                 binding.infoBlock.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.green));
                 binding.refresh.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.green));
             });
