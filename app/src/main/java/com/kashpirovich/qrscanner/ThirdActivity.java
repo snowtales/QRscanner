@@ -35,6 +35,7 @@ import androidx.core.content.res.ResourcesCompat;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import okhttp3.OkHttpClient;
@@ -52,6 +53,7 @@ public class ThirdActivity extends AppCompatActivity {
     private String total;
     private String concat = "";
     LinearLayout llm;
+    CompositeDisposable compositeDisposable;
 
 
 
@@ -63,6 +65,7 @@ public class ThirdActivity extends AppCompatActivity {
         Bundle bungle = getIntent().getExtras();
         llm = findViewById(R.id.linearLY);
         View v = binding.getRoot();
+        compositeDisposable = new CompositeDisposable();
         InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         setContentView(v);
         if (bungle != null) {
@@ -83,31 +86,28 @@ public class ThirdActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-
                 if (s.toString().trim().length() > 1) {
                     //concat = BuildConfig.TICKET_URL + tail + s.toString();
                     //Log.i("Request", concat);
                     // parseExampleOfJsonObject(concat);
-                    Observable.just(s)
-                            .subscribeOn(Schedulers.io())
-                            .debounce(2, TimeUnit.SECONDS)
+
+                    compositeDisposable.add(Observable.just(s)
+                            //.map(finalTicket -> concat = BuildConfig.TICKET_URL + tail + finalTicket.toString().trim())
+                            .throttleLatest(4, TimeUnit.SECONDS)
+                            .observeOn(Schedulers.io())
                             .subscribe(obg -> {
-                                        concat = BuildConfig.TICKET_URL + tail + obg.toString();
+                                        concat = BuildConfig.TICKET_URL + tail + obg.toString().trim();
                                         Log.i("Request", concat);
                                         parseExampleOfJsonObject(concat);
                                     },
-                                    throwable -> Log.e("TAG", "onCreate: ", throwable));
+                                    throwable -> Log.e("TAG", "onCreate: ", throwable)));
                 }
             }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
         });
-
-        concat = BuildConfig.TICKET_URL + tail + edit.getText().toString();
-
-        Log.i("Request2", concat);
 
         codeScan();
         binding.refresh.setOnClickListener(v1 -> recreate());
@@ -135,7 +135,6 @@ public class ThirdActivity extends AppCompatActivity {
         codeScanner.setScanMode(ScanMode.SINGLE);
         codeScanner.setAutoFocusEnabled(true);
         codeScanner.setFlashEnabled(false);
-
         codeScanner.setDecodeCallback(result
                 -> {
             runOnUiThread(()
@@ -193,7 +192,7 @@ public class ThirdActivity extends AppCompatActivity {
             runOnUiThread(() -> {
                 binding.internetearn.setVisibility(View.VISIBLE);
                 binding.info.setVisibility(View.GONE);
-                Snackbar.make(llm,"Проверьте интернет соединение и обновите страницу",Snackbar.LENGTH_SHORT).setBackgroundTint(
+                Snackbar.make(llm, "Проверьте интернет соединение и обновите страницу", Snackbar.LENGTH_LONG).setBackgroundTint(
                         ResourcesCompat.getColor(getResources(), R.color.red, null)).show();
                 //binding.internetearn.setText("Проверьте интернет соединение и обновите страницу");
                 //binding.refresh.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.red));
@@ -215,12 +214,12 @@ public class ThirdActivity extends AppCompatActivity {
             total = event + '\n' + hall + '\n' + "Ряд: " + row + '\n' + "Место: " + column;
             runOnUiThread(() ->
             {
-                binding.info.setText(total);
-                Snackbar.make(llm,"Проверьте интернет соединение и обновите страницу",Snackbar.LENGTH_SHORT).setBackgroundTint(
-                        ResourcesCompat.getColor(getResources(), R.color.red, null)
+                Snackbar.make(llm, total, Snackbar.LENGTH_LONG).setBackgroundTint(
+                        ResourcesCompat.getColor(getResources(), R.color.green, null)
                 ).show();
-                binding.infoBlock.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.green));
-                binding.refresh.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.green));
+                //binding.info.setText(total);
+                //binding.infoBlock.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.green));
+                //binding.refresh.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.green));
             });
 
         } catch (Exception e) {
@@ -229,17 +228,23 @@ public class ThirdActivity extends AppCompatActivity {
                 String message = root.getString("message");
                 runOnUiThread(() ->
                 {
-                    binding.infoBlock.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.red));
-                    binding.refresh.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.red));
-                    binding.info.setText(message);
+//                    binding.infoBlock.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.red));
+//                    binding.refresh.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.red));
+//                    binding.info.setText(message);
+                    Snackbar.make(binding.infoBlock, message, Snackbar.LENGTH_LONG).setBackgroundTint(
+                            ResourcesCompat.getColor(getResources(), R.color.red, null)
+                    ).show();
                 });
             } catch (Exception n) {
                 Log.e("THAT IS MISTAKE", e.toString());
                 runOnUiThread(() ->
                 {
-                    binding.infoBlock.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.red));
-                    binding.refresh.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.red));
-                    binding.info.setText("Ошибка, такого мероприятия не существует");
+//                    binding.infoBlock.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.red));
+//                    binding.refresh.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.red));
+//                    binding.info.setText("Ошибка, такого мероприятия не существует");
+                    Snackbar.make(llm, "Ошибка, такого мероприятия не существует", Snackbar.LENGTH_LONG).setBackgroundTint(
+                            ResourcesCompat.getColor(getResources(), R.color.red, null)
+                    ).show();
                 });
             }
         }
