@@ -7,8 +7,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -20,6 +18,7 @@ import com.budiyev.android.codescanner.AutoFocusMode;
 import com.budiyev.android.codescanner.CodeScanner;
 import com.budiyev.android.codescanner.ScanMode;
 import com.google.android.material.snackbar.Snackbar;
+import com.jakewharton.rxbinding4.widget.RxTextView;
 import com.kashpirovich.qrscanner.databinding.ThirdWindowBinding;
 
 import org.json.JSONObject;
@@ -33,7 +32,6 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
-import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.disposables.Disposable;
@@ -56,8 +54,6 @@ public class ThirdActivity extends AppCompatActivity {
     CompositeDisposable compositeDisposable;
 
 
-
-    // @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -79,38 +75,22 @@ public class ThirdActivity extends AppCompatActivity {
         edit.requestFocus();
 
         imm.hideSoftInputFromWindow(edit.getWindowToken(), 0);
-        edit.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
 
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.toString().trim().length() > 1) {
-                    //concat = BuildConfig.TICKET_URL + tail + s.toString();
-                    //Log.i("Request", concat);
-                    // parseExampleOfJsonObject(concat);
-
-                    compositeDisposable.add(Observable.just(s)
-                            //.map(finalTicket -> concat = BuildConfig.TICKET_URL + tail + finalTicket.toString().trim())
-                            .throttleLatest(4, TimeUnit.SECONDS)
-                            .observeOn(Schedulers.io())
-                            .subscribe(obg -> {
-                                        concat = BuildConfig.TICKET_URL + tail + obg.toString().trim();
-                                        Log.i("Request", concat);
-                                        parseExampleOfJsonObject(concat);
-                                    },
-                                    throwable -> Log.e("TAG", "onCreate: ", throwable)));
-                }
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-            }
-        });
+        compositeDisposable.add(RxTextView.textChanges(edit)
+                .throttleLast(3, TimeUnit.SECONDS)
+                .filter(f -> f.length() > 0)
+                .subscribe(obg -> {
+                    concat = BuildConfig.TICKET_URL + tail + obg.toString().trim();
+                    Log.i("Request", concat);
+                    parseExampleOfJsonObject(concat);
+                }));
 
         codeScan();
-        binding.refresh.setOnClickListener(v1 -> recreate());
+        binding.refresh.setOnClickListener(v1 ->
+        {
+            recreate();
+            edit.setText(null);
+        });
         setupPermission();
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
     }
@@ -147,7 +127,6 @@ public class ThirdActivity extends AppCompatActivity {
                 }
             });
         });
-
     }
 
     private void setupPermission() {
@@ -192,7 +171,7 @@ public class ThirdActivity extends AppCompatActivity {
             runOnUiThread(() -> {
                 binding.internetearn.setVisibility(View.VISIBLE);
                 binding.info.setVisibility(View.GONE);
-                Snackbar.make(llm, "Проверьте интернет соединение и обновите страницу", Snackbar.LENGTH_LONG).setBackgroundTint(
+                Snackbar.make(binding.infoBlock, "Проверьте интернет соединение и обновите страницу", Snackbar.LENGTH_LONG).setBackgroundTint(
                         ResourcesCompat.getColor(getResources(), R.color.red, null)).show();
                 //binding.internetearn.setText("Проверьте интернет соединение и обновите страницу");
                 //binding.refresh.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.red));
@@ -214,7 +193,7 @@ public class ThirdActivity extends AppCompatActivity {
             total = event + '\n' + hall + '\n' + "Ряд: " + row + '\n' + "Место: " + column;
             runOnUiThread(() ->
             {
-                Snackbar.make(llm, total, Snackbar.LENGTH_LONG).setBackgroundTint(
+                Snackbar.make(binding.infoBlock, total, Snackbar.LENGTH_LONG).setBackgroundTint(
                         ResourcesCompat.getColor(getResources(), R.color.green, null)
                 ).show();
                 //binding.info.setText(total);
@@ -242,7 +221,7 @@ public class ThirdActivity extends AppCompatActivity {
 //                    binding.infoBlock.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.red));
 //                    binding.refresh.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.red));
 //                    binding.info.setText("Ошибка, такого мероприятия не существует");
-                    Snackbar.make(llm, "Ошибка, такого мероприятия не существует", Snackbar.LENGTH_LONG).setBackgroundTint(
+                    Snackbar.make(binding.infoBlock, "Ошибка, такого мероприятия не существует", Snackbar.LENGTH_LONG).setBackgroundTint(
                             ResourcesCompat.getColor(getResources(), R.color.red, null)
                     ).show();
                 });
