@@ -77,7 +77,7 @@ public class ThirdActivity extends AppCompatActivity {
         imm.hideSoftInputFromWindow(edit.getWindowToken(), 0);
 
         compositeDisposable.add(RxTextView.textChanges(edit)
-                .throttleLast(3, TimeUnit.SECONDS)
+                .throttleLast(4, TimeUnit.SECONDS)
                 .filter(f -> f.length() > 0)
                 .subscribe(obg -> {
                     concat = BuildConfig.TICKET_URL + tail + obg.toString().trim();
