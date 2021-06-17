@@ -19,6 +19,8 @@ import java.util.Map;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
@@ -31,7 +33,7 @@ public class EventActivity extends AppCompatActivity {
     GatesClass getter;
     LinearLayoutManager lLM;
     RecyclerView recyclerView;
-    RelativeLayout line;
+    SwipeRefreshLayout line;
     int idVenue;
     int gatesId;
     Map<Integer, String> mapFilm = new HashMap();

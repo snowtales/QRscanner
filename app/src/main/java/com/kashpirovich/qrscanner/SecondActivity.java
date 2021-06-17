@@ -17,6 +17,8 @@ import java.util.ArrayList;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.disposables.Disposable;
@@ -31,7 +33,7 @@ public class SecondActivity extends AppCompatActivity {
     CinemasClass getter;
     LinearLayoutManager lLM;
     RecyclerView recyclerView;
-    RelativeLayout line;
+    SwipeRefreshLayout line;
     private GatesRecycleAdapter gatesRecycleAdapter;
 
     @Override
