@@ -48,6 +48,13 @@ public class SecondActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(lLM);
         recyclerView.setAdapter(gatesRecycleAdapter);
 
+        line.setOnRefreshListener(() -> {
+                    todo.clear();
+                    parseExampleOfJsonObject(BuildConfig.GATES_URL + getter.getId());
+                    line.setRefreshing(false);
+                }
+        );
+
 
         if (bungle != null) {
             getter = getIntent().getParcelableExtra("id");
@@ -58,7 +65,6 @@ public class SecondActivity extends AppCompatActivity {
 
     private void updateUi(){
         gatesRecycleAdapter.setData(todo);
-        findViewById(R.id.progress2).setVisibility(View.GONE);
     }
 
     private void parseExampleOfJsonObject(String url) {

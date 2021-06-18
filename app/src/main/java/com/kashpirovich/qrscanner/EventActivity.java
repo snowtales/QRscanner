@@ -52,6 +52,13 @@ public class EventActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(lLM);
         recyclerView.setAdapter(eventsAdapter);
 
+        line.setOnRefreshListener(() -> {
+            maydo.clear();
+            parseExampleOfJsonObject(BuildConfig.EVENT_URL);
+            parseFilms(BuildConfig.FILM_URL);
+            line.setRefreshing(false);
+        });
+
         parseExampleOfJsonObject(BuildConfig.EVENT_URL);
         parseFilms(BuildConfig.FILM_URL);
 
@@ -143,7 +150,7 @@ public class EventActivity extends AppCompatActivity {
                     String nameFilm = mapFilm.get(filmId);
                     String date = currentItem.getString("dateStart").replace("-", " ");
                     String day = date.substring(8, 10);
-                    String time = date.substring(11, 15);
+                    String time = date.substring(11, 16);
                     String finalDate = day + " апреля " + time;
 
                     EventClass pussy = new EventClass(id, idVen, nameFilm, finalDate, gatesId);
