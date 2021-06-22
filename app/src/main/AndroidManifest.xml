@@ -25,7 +25,7 @@
         </activity>
         <activity
             android:name=".SecondActivity"
-            android:label="ММКФ 2021"
+            android:label="Входная группа"
             android:parentActivityName=".MainActivity"
             android:screenOrientation="portrait">
             <meta-data
@@ -34,7 +34,7 @@
         </activity>
         <activity
             android:name=".EventActivity"
-            android:label="ММКФ 2021"
+            android:label="Мероприятия"
             android:parentActivityName=".SecondActivity"
             android:screenOrientation="portrait">
             <meta-data
@@ -43,7 +43,7 @@
         </activity>
         <activity
             android:name=".ThirdActivity"
-            android:label="ММКФ 2021"
+            android:label="QR-Scanner"
             android:parentActivityName=".EventActivity"
             android:screenOrientation="portrait">
             <meta-data

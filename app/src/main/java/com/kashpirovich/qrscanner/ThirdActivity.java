@@ -86,6 +86,12 @@ public class ThirdActivity extends AppCompatActivity {
                 }));
 
         codeScan();
+        binding.sendreq.setOnClickListener(v1 -> {
+            concat = BuildConfig.TICKET_URL + tail + edit.getText().toString().trim();
+            Log.i("Request2", concat);
+            parseExampleOfJsonObject(concat);
+        });
+
         binding.refresh.setOnClickListener(v1 ->
         {
             recreate();

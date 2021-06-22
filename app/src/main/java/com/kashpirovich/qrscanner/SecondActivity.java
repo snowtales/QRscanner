@@ -55,16 +55,16 @@ public class SecondActivity extends AppCompatActivity {
                 }
         );
 
-
         if (bungle != null) {
             getter = getIntent().getParcelableExtra("id");
         }
-        Log.e("finalUrl is: ", BuildConfig.GATES_URL + getter.getId());
+//        Log.e("finalUrl is: ", BuildConfig.GATES_URL + getter.getId());
         parseExampleOfJsonObject(BuildConfig.GATES_URL + getter.getId());
     }
 
     private void updateUi(){
         gatesRecycleAdapter.setData(todo);
+        findViewById(R.id.progressGates).setVisibility(View.GONE);
     }
 
     private void parseExampleOfJsonObject(String url) {

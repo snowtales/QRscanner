@@ -27,18 +27,31 @@
 
         <EditText
             android:id="@+id/edit_text"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="50dp"
             android:layout_marginBottom="36dp"
-            android:layout_marginLeft="16dp"
-            android:layout_marginRight="16dp"
             android:focusableInTouchMode="true"
             android:hint="Или нажмите сюда, чтобы ввести c помощью сканера"
             android:lines="2"
             android:paddingLeft="36dp"
             android:paddingRight="36dp"
             android:textColorHint="@color/gray" />
+
+        <ImageButton
+            android:id="@+id/sendreq"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:layout_alignTop="@id/edit_text"
+            android:layout_alignBottom="@id/edit_text"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="8dp"
+            android:background="@color/white"
+            android:clickable="true"
+            android:focusable="true"
+            android:src="@drawable/ic_baseline_send_24" />
 
         <ImageButton
             android:id="@+id/refresh"
