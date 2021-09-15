@@ -3,7 +3,6 @@ package com.kashpirovich.qrscanner;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.RelativeLayout;
 
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
@@ -23,6 +22,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.internal.operators.observable.ObservableAny;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -36,7 +36,8 @@ public class EventActivity extends AppCompatActivity {
     SwipeRefreshLayout line;
     int idVenue;
     int gatesId;
-    Map<Integer, String> mapFilm = new HashMap();
+    Map<Integer, String> mapFilm = new HashMap<>();
+    Map<String, String> calendar = new HashMap<>();
     private EventsAdapter eventsAdapter;
 
     @Override
@@ -54,13 +55,24 @@ public class EventActivity extends AppCompatActivity {
 
         line.setOnRefreshListener(() -> {
             maydo.clear();
-            parseExampleOfJsonObject(BuildConfig.EVENT_URL);
-            parseFilms(BuildConfig.FILM_URL);
+            parseFilms();
+            parseExampleOfJsonObject();
             line.setRefreshing(false);
         });
+        calendar.put("01", "январь");
+        calendar.put("02", "февраль");
+        calendar.put("03", "март");
+        calendar.put("04", "апрель");
+        calendar.put("05", "май");
+        calendar.put("06", "июнь");
+        calendar.put("07", "июль");
+        calendar.put("08", "август");
+        calendar.put("09", "сентябрь");
+        calendar.put("10", "октябрь");
+        calendar.put("11", "ноябрь");
+        calendar.put("12", "декабрь");
 
-        parseExampleOfJsonObject(BuildConfig.EVENT_URL);
-        parseFilms(BuildConfig.FILM_URL);
+        parseFilms();
 
         if (bungle != null) {
             getter = getIntent().getParcelableExtra("gates");
@@ -69,7 +81,6 @@ public class EventActivity extends AppCompatActivity {
         gatesId = getter.getId();
         idVenue = getter.getIdVenue();
         Log.v("idVuenue", idVenue + "");
-
     }
 
     private void updateList() {
@@ -77,8 +88,8 @@ public class EventActivity extends AppCompatActivity {
         findViewById(R.id.vProgress).setVisibility(View.GONE);
     }
 
-    private void parseExampleOfJsonObject(String url) {
-       Observable.just(url)
+    private void parseExampleOfJsonObject() {
+        Observable.just(BuildConfig.EVENT_URL)
                 .observeOn(Schedulers.io())
                 .map(this::downloadJson)
                 .observeOn(AndroidSchedulers.mainThread())
@@ -90,13 +101,15 @@ public class EventActivity extends AppCompatActivity {
 
     }
 
-    private void parseFilms(String url) {
-        Observable.just(url)
+    private void parseFilms() {
+        Observable.just(BuildConfig.FILM_URL)
                 .observeOn(Schedulers.io())
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .map(this::downloadJson)
-                .subscribe(jsonString ->
-                                parseFilmsJson(jsonString),
+                .subscribe(jsonString -> {
+                            parseFilmsJson(jsonString);
+                            parseExampleOfJsonObject();
+                        },
                         throwable -> Log.e("TAG", "onCreate: ", throwable));
     }
 
@@ -133,10 +146,10 @@ public class EventActivity extends AppCompatActivity {
     }
 
     private void parseJsonObject(String json) {
-        //ArrayList<GatesClass> gatesClasses = new ArrayList<>();
         try {
             JSONObject rootObj = new JSONObject(json);
             JSONArray data = rootObj.getJSONArray("data");
+            String nameFilm;
             for (int i = 0; i < data.length(); i++) {
                 JSONObject currentItem = data.getJSONObject(i);
                 JSONObject hallObj = currentItem.getJSONObject("hall");
@@ -145,13 +158,18 @@ public class EventActivity extends AppCompatActivity {
                 if (idVen == idVenue) {
                     int id = currentItem.getInt("id");
                     JSONArray films = currentItem.getJSONArray("films");
-                    JSONObject ne = films.getJSONObject(0);
-                    int filmId = ne.getInt("film");
-                    String nameFilm = mapFilm.get(filmId);
+                    if (films.length() > 0) {
+                        JSONObject ne = films.getJSONObject(0);
+                        int filmId = ne.getInt("film");
+                        nameFilm = mapFilm.get(filmId);
+                    } else {
+                        nameFilm = currentItem.getString("name");
+                    }
                     String date = currentItem.getString("dateStart").replace("-", " ");
-                    String day = date.substring(8, 10);
+                    String month = calendar.get(date.substring(5, 7)); //возможна ошибка, нужно поменять метод
+                    String day = date.substring(8, 10).replace("0", "");
                     String time = date.substring(11, 16);
-                    String finalDate = day + " апреля " + time;
+                    String finalDate = day + " " + month + " " + time;
 
                     EventClass pussy = new EventClass(id, idVen, nameFilm, finalDate, gatesId);
                     maydo.add(pussy);
@@ -159,7 +177,7 @@ public class EventActivity extends AppCompatActivity {
             }
 
         } catch (Exception e) {
-            Log.e("THAT IS MISTAKE", e.toString());
+            Log.e("THAT IS MISTAKE EV", e.toString());
             runOnUiThread(() ->
                     Snackbar.make(this, line, "ошибка приложения, попробуйте еще раз", BaseTransientBottomBar.LENGTH_LONG).show());
         }

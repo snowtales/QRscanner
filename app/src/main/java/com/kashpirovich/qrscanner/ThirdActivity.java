@@ -199,12 +199,11 @@ public class ThirdActivity extends AppCompatActivity {
             total = event + '\n' + hall + '\n' + "Ряд: " + row + '\n' + "Место: " + column;
             runOnUiThread(() ->
             {
-                Snackbar.make(binding.infoBlock, total, Snackbar.LENGTH_LONG).setBackgroundTint(
-                        ResourcesCompat.getColor(getResources(), R.color.green, null)
-                ).show();
-                //binding.info.setText(total);
-                //binding.infoBlock.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.green));
-                //binding.refresh.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.green));
+                binding.info.setText(total);
+                binding.infoBlock.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.green));
+                binding.refresh.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.green));
+                binding.editText.setVisibility(View.GONE);
+                binding.sendreq.setVisibility(View.GONE);
             });
 
         } catch (Exception e) {
@@ -213,12 +212,11 @@ public class ThirdActivity extends AppCompatActivity {
                 String message = root.getString("message");
                 runOnUiThread(() ->
                 {
-//                    binding.infoBlock.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.red));
-//                    binding.refresh.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.red));
-//                    binding.info.setText(message);
-                    Snackbar.make(binding.infoBlock, message, Snackbar.LENGTH_LONG).setBackgroundTint(
-                            ResourcesCompat.getColor(getResources(), R.color.red, null)
-                    ).show();
+                    binding.infoBlock.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.red));
+                    binding.refresh.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.red));
+                    binding.info.setText(message);
+                    binding.editText.setVisibility(View.GONE);
+                    binding.sendreq.setVisibility(View.GONE);
                 });
             } catch (Exception n) {
                 Log.e("THAT IS MISTAKE", e.toString());
