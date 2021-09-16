@@ -196,7 +196,8 @@ public class ThirdActivity extends AppCompatActivity {
             String hall = data.getString("hall");
             String row = data.getString("row");
             String column = data.getString("col");
-            total = event + '\n' + hall + '\n' + "Ряд: " + row + '\n' + "Место: " + column;
+            String sector = data.getString("sector");
+            total = event + '\n' + hall + '\n' + "Ряд: " + row + '\n' + "Место: " + column + '\n' + sector;
             runOnUiThread(() ->
             {
                 binding.info.setText(total);
