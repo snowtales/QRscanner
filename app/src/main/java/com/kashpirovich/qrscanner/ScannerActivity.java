@@ -1,37 +1,26 @@
 package com.kashpirovich.qrscanner;
 
-import android.Manifest;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
+
 import android.content.Context;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.VibrationEffect;
-import android.os.Vibrator;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.Toast;
 
-import com.budiyev.android.codescanner.AutoFocusMode;
-import com.budiyev.android.codescanner.CodeScanner;
-import com.budiyev.android.codescanner.ScanMode;
 import com.google.android.material.snackbar.Snackbar;
 import com.jakewharton.rxbinding4.widget.RxTextView;
-import com.kashpirovich.qrscanner.databinding.ThirdWindowBinding;
+import com.kashpirovich.qrscanner.databinding.ActivityScannerBinding;
 
 import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.core.content.res.ResourcesCompat;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
@@ -41,98 +30,59 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-public class ThirdActivity extends AppCompatActivity {
-    private static final int CODE_CAM = 101;
-    private static final String TAG = "makeMeReal";
-    private CodeScanner codeScanner;
+public class ScannerActivity extends AppCompatActivity {
+    private static final String TAG = "makeMe2Real";
     EventClass getter;
-    private ThirdWindowBinding binding;
-    private String tail, eventId, gatesId;
-    private Vibrator vibrator;
-    private String total;
-    private String concat = "";
-    LinearLayout llm;
     CompositeDisposable compositeDisposable;
-
+    String concat = "";
+    LinearLayout llm;
+    private ActivityScannerBinding binding;
+    private String tail, eventId, gatesId;
+    private String total;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = ThirdWindowBinding.inflate(getLayoutInflater());
-        Bundle bungle = getIntent().getExtras();
+        binding = ActivityScannerBinding.inflate(getLayoutInflater());
+        Bundle bundle = getIntent().getExtras();
         llm = findViewById(R.id.linearLY);
+        setContentView(R.layout.activity_scanner);
         View v = binding.getRoot();
         compositeDisposable = new CompositeDisposable();
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         setContentView(v);
-        if (bungle != null) {
-            getter = getIntent().getParcelableExtra("event");
+        if (bundle != null) {
+            getter = getIntent().getParcelableExtra("Event");
         }
         eventId = getter.getId() + "/";
         gatesId = getter.getGatesId() + "/";
         tail = eventId + gatesId;
 
-        codeScan();
+        EditText edit = binding.editText;
+
+        edit.requestFocus();
+        imm.hideSoftInputFromWindow(edit.getWindowToken(), 0);
+
+        compositeDisposable.add(RxTextView.textChanges(edit)
+                .throttleLast(4, TimeUnit.SECONDS)
+                .filter(f -> f.length() > 0)
+                .subscribe(obg -> {
+                    concat = BuildConfig.TICKET_URL + tail + obg.toString().trim();
+                    Log.i("Request", concat);
+                    parseExampleOfJsonObject(concat);
+                }));
+
+        binding.sendreq.setOnClickListener(v1 -> {
+            concat = BuildConfig.TICKET_URL + tail + edit.getText().toString().trim();
+            Log.i("Request2", concat);
+            parseExampleOfJsonObject(concat);
+        });
 
         binding.refresh.setOnClickListener(v1 ->
-                recreate());
-        setupPermission();
-        vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-
-        binding.swapToScanner.setOnClickListener(v1 -> {
-            Intent in = new Intent(getBaseContext(), ScannerActivity.class);
-            in.putExtra("Event", getter);
+        {
+            recreate();
+            edit.setText(null);
         });
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        codeScanner.startPreview();
-    }
-
-    @Override
-    protected void onPause() {
-        codeScanner.releaseResources();
-        super.onPause();
-    }
-
-    private void codeScan() {
-        codeScanner = new CodeScanner(this, binding.qrScanner);
-        codeScanner.setCamera(CodeScanner.CAMERA_BACK);
-        codeScanner.setFormats(CodeScanner.ALL_FORMATS);
-        codeScanner.setAutoFocusMode(AutoFocusMode.SAFE);
-        codeScanner.setScanMode(ScanMode.SINGLE);
-        codeScanner.setAutoFocusEnabled(true);
-        codeScanner.setFlashEnabled(false);
-        codeScanner.setDecodeCallback(result
-                -> {
-            runOnUiThread(()
-                    -> {
-                String concat = BuildConfig.TICKET_URL + tail + result.getText();
-                Log.i("Request", concat);
-                parseExampleOfJsonObject(concat);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    vibrator.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
-                }
-            });
-        });
-    }
-
-    private void setupPermission() {
-        int permission = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
-
-        if (permission != PackageManager.PERMISSION_GRANTED) makeRequest();
-    }
-
-    private void makeRequest() {
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, CODE_CAM);
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == CODE_CAM)
-            if (grantResults.length == 0 || grantResults[0] != PackageManager.PERMISSION_GRANTED)
-                Toast.makeText(this, "Для работы приложения, нужно разрешение на использование камеры", Toast.LENGTH_LONG).show();
     }
 
     private void parseExampleOfJsonObject(String url) {
@@ -160,7 +110,7 @@ public class ThirdActivity extends AppCompatActivity {
             runOnUiThread(() -> {
                 binding.internetearn.setVisibility(View.VISIBLE);
                 binding.info.setVisibility(View.GONE);
-                Snackbar.make(binding.infoBlock, "Проверьте интернет соединение и обновите страницу", Snackbar.LENGTH_LONG).setBackgroundTint(
+                Snackbar.make(binding.scannerLayout, "Проверьте интернет соединение и обновите страницу", Snackbar.LENGTH_LONG).setBackgroundTint(
                         ResourcesCompat.getColor(getResources(), R.color.red, null)).show();
             });
             Log.e("MainActivity", "downloadJson: ", exception);
@@ -181,8 +131,10 @@ public class ThirdActivity extends AppCompatActivity {
             runOnUiThread(() ->
             {
                 binding.info.setText(total);
-                binding.infoBlock.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.green));
+                binding.scannerLayout.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.green));
                 binding.refresh.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.green));
+                binding.editText.setVisibility(View.GONE);
+                binding.sendreq.setVisibility(View.GONE);
             });
 
         } catch (Exception e) {
@@ -191,15 +143,17 @@ public class ThirdActivity extends AppCompatActivity {
                 String message = root.getString("message");
                 runOnUiThread(() ->
                 {
-                    binding.infoBlock.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.red));
+                    binding.scannerLayout.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.red));
                     binding.refresh.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.red));
                     binding.info.setText(message);
+                    binding.editText.setVisibility(View.GONE);
+                    binding.sendreq.setVisibility(View.GONE);
                 });
             } catch (Exception n) {
                 Log.e("THAT IS MISTAKE", e.toString());
                 runOnUiThread(() ->
                 {
-                    Snackbar.make(binding.infoBlock, "Ошибка, такого мероприятия не существует", Snackbar.LENGTH_LONG).setBackgroundTint(
+                    Snackbar.make(binding.scannerLayout, "Ошибка, такого мероприятия не существует", Snackbar.LENGTH_LONG).setBackgroundTint(
                             ResourcesCompat.getColor(getResources(), R.color.red, null)
                     ).show();
                 });

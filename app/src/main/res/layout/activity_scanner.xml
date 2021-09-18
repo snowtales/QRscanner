@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/scanner_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ScannerActivity">
+
+
+    <ImageButton
+        android:id="@+id/refresh"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_alignParentEnd="true"
+        android:background="@color/white"
+        android:src="@drawable/ic_baseline_refresh_24" />
+
+    <TextView
+        android:id="@+id/internetearn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/info"
+        android:layout_gravity="center_horizontal"
+        android:paddingLeft="18dp"
+        android:paddingTop="50dp"
+        android:paddingRight="18dp"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textColor="@color/black"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/info"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:hint="Отсканируйте билет"
+        android:paddingLeft="18dp"
+        android:paddingTop="50dp"
+        android:paddingRight="18dp"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textColor="@color/black" />
+
+    <EditText
+        android:id="@+id/edit_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="55dp"
+        android:layout_marginBottom="36dp"
+        android:focusableInTouchMode="true"
+        android:hint="Или нажмите сюда, чтобы ввести c помощью сканера"
+        android:lines="3"
+        android:paddingLeft="36dp"
+        android:paddingRight="36dp"
+        android:textColorHint="@color/gray" />
+
+    <ImageButton
+        android:id="@+id/sendreq"
+        android:layout_width="42dp"
+        android:layout_height="42dp"
+        android:layout_alignTop="@id/edit_text"
+        android:layout_alignBottom="@id/edit_text"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="8dp"
+        android:background="@color/white"
+        android:clickable="true"
+        android:focusable="true"
+        android:src="@drawable/ic_baseline_send_24" />
+
+</RelativeLayout>
