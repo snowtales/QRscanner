@@ -10,8 +10,6 @@ import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.util.Log;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -19,13 +17,11 @@ import com.budiyev.android.codescanner.AutoFocusMode;
 import com.budiyev.android.codescanner.CodeScanner;
 import com.budiyev.android.codescanner.ScanMode;
 import com.google.android.material.snackbar.Snackbar;
-import com.jakewharton.rxbinding4.widget.RxTextView;
 import com.kashpirovich.qrscanner.databinding.ThirdWindowBinding;
 
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -81,6 +77,7 @@ public class ThirdActivity extends AppCompatActivity {
         binding.swapToScanner.setOnClickListener(v1 -> {
             Intent in = new Intent(getBaseContext(), ScannerActivity.class);
             in.putExtra("Event", getter);
+            startActivity(in);
         });
     }
 

@@ -50,7 +50,7 @@
         android:layout_marginEnd="55dp"
         android:layout_marginBottom="36dp"
         android:focusableInTouchMode="true"
-        android:hint="Или нажмите сюда, чтобы ввести c помощью сканера"
+        android:hint="здесь появится код билета"
         android:lines="3"
         android:paddingLeft="36dp"
         android:paddingRight="36dp"
