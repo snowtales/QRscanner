@@ -1,9 +1,5 @@
 package com.kashpirovich.qrscanner;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
-import androidx.core.content.res.ResourcesCompat;
-
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
@@ -21,6 +17,9 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
@@ -122,12 +121,11 @@ public class ScannerActivity extends AppCompatActivity {
         try {
             JSONObject rootObj = new JSONObject(json);
             JSONObject data = rootObj.getJSONObject("data");
-            String event = data.getString("event");
             String hall = data.getString("hall");
             String row = data.getString("row");
             String column = data.getString("col");
             String sector = data.getString("sector");
-            total = event + '\n' + hall + '\n' + "Ряд: " + row + '\n' + "Место: " + column + '\n' + sector;
+            total = hall + '\n' + "Ряд: " + row + '\n' + "Место: " + column + '\n' + sector;
             runOnUiThread(() ->
             {
                 binding.info.setText(total);
